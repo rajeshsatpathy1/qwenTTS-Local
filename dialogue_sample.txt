@@ -1,0 +1,29 @@
+# Sample dialogue file for Qwen3-TTS narration
+# Format: [CharacterName]: Dialogue text
+# Lines starting with # are comments and are ignored.
+
+[Narrator]: The old clock tower chimed nine as Alice stepped into the dimly lit archive room.
+
+[Alice]: Hello? Is anyone here? I got a message saying someone wanted to see me urgently.
+
+[Bob]: I'm glad you came. Sit down, please. What I'm about to tell you can't leave this room.
+
+[Alice]: You're scaring me. What's going on?
+
+[Bob]: Three days ago, a set of documents went missing from this archive. Documents that could change everything we know about the founding of this city.
+
+[Narrator]: Alice felt the color drain from her face. She had been the last one in this room three days ago.
+
+[Alice]: What kind of documents are we talking about?
+
+[Bob]: Letters. Private correspondence between the mayor and a man who, according to every official record, died in 1943. The handwriting on both sides is identical.
+
+[Alice]: That's not possible.
+
+[Bob]: No. It shouldn't be. And yet here we are.
+
+[Narrator]: Silence settled between them like dust on forgotten shelves.
+
+[Alice]: Why did you call me specifically?
+
+[Bob]: Because your name was in those letters, Alice. Written seventy years before you were born.

@@ -1,0 +1,4 @@
+[Narrator]: Rain tapped softly against the windows of the archive.
+[Narrator]: A lantern flickered once, then steadied.
+[Guide]: Keep your voice descriptions separate from your narration beats.
+[Guide]: If a line feels too long, split it before you render it.

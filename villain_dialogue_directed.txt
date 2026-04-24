@@ -1,0 +1,33 @@
+[Narrator]: The rain lashed against the cathedral's stained glass, casting fractured, bloody patterns across the villain's face. He did not look like a monster. He looked like a man who had simply stopped pretending.
+
+[Narrator]: He stepped over the discarded shield of the fallen knight. His voice came low and melodic, rough at the edges.
+
+[Villain_Cold]: "You speak of honor as if it is a shield."
+
+[Narrator]: He circled the trembling hero.
+
+[Villain_Cold]: "But tell me... what good does honor actually do?"
+
+[Villain_Cold]: "It is a comfortable weight. It tells you where to stand... and when to die. But have you ever considered the sheer weight of its absence?"
+
+[Narrator]: He leaned in. His eyes were cold, and terrifyingly clear.
+
+[Villain_Bitter]: "Does it not take a more jagged kind of courage to give away a redeeming quality? To deliberately sever the one thing that kept you sane, just to ensure the job gets done?"
+
+[Villain_Bitter]: "You look at me and you see a shortcut. You think I cheat because it is easy."
+
+[Narrator]: A bitter, sharp laugh escaped him.
+
+[Villain_Bitter]: "But have you ever cheated... and slept peacefully the next night? Have you ever broken a sacred vow and not spent the dawn holding a knife close to your own heart, wondering if there is anything left worth saving?"
+
+[Villain_Angry]: "No. You have not."
+
+[Narrator]: He grabbed the hero's chin and forced him to look up.
+
+[Villain_Angry]: "I can see it in your eyes. That flickering, desperate terror. You do not stay 'good' because you are strong. You stay good because you are a coward."
+
+[Villain_Angry]: "You do not hold the courage to cheat, to be the villain, to be the one who is shunned by history for the sake of victory. So you excuse yourself with honor and morals. You wrap yourself in 'rightness' because the dark is too cold for you."
+
+[Narrator]: He shoved the hero back with a sneer of pure, unfiltered disdain.
+
+[Villain_Angry]: "You are not a saint. You are just pathetic."

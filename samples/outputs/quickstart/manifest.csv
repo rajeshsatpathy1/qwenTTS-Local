@@ -1,0 +1,5 @@
+index,character,text,file
+1,Narrator,Rain tapped softly against the windows of the archive.,0001_Narrator.wav
+2,Narrator,"A lantern flickered once, then steadied.",0002_Narrator.wav
+3,Guide,Keep your voice descriptions separate from your narration beats.,0003_Guide.wav
+4,Guide,"If a line feels too long, split it before you render it.",0004_Guide.wav
