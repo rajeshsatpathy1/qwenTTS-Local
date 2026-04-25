@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qwen TTS Workflow Guide</title>
+    <meta
+      name="description"
+      content="Interactive GitHub Pages guide for Qwen TTS inputs, command flow, and output artifacts."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <nav class="topbar">
+          <span class="brand">Qwen TTS Guide</span>
+          <div class="topbar-links">
+            <a href="#example-output">Example Output</a>
+            <a href="#input-lab">Input Lab</a>
+            <a href="#pipeline">Pipeline</a>
+            <a href="#outputs">Outputs</a>
+          </div>
+        </nav>
+
+        <div class="hero-grid">
+          <section class="hero-copy">
+            <p class="eyebrow">Interactive GitHub Pages</p>
+            <h1>Understand the files this workflow expects and the artifacts it creates.</h1>
+            <p class="hero-text">
+              This page turns the current repo workflow into a technical walkthrough:
+              voice JSON, dialogue formatting, exact CLI steps, and the output folder
+              structure your users should expect.
+            </p>
+          </section>
+        </div>
+
+        <div class="summary-strip">
+          <div class="summary-card">
+            <span class="summary-title">Workflow shape</span>
+            <ol class="workflow-list">
+              <li>Define speaker voices in JSON.</li>
+              <li>Write dialogue with bracketed speaker tags.</li>
+              <li>Render numbered WAV fragments and a manifest.</li>
+              <li>Merge fragments into a single WAV.</li>
+              <li>Optionally export MP3 or MP4 for sharing.</li>
+            </ol>
+          </div>
+          <div class="summary-card requirements-card">
+            <p class="card-title">Environment requirements</p>
+            <ul>
+              <li>Windows</li>
+              <li>NVIDIA GPU with CUDA</li>
+              <li>Python 3.12</li>
+              <li>Hugging Face access to Qwen3-TTS models</li>
+            </ul>
+          </div>
+        </div>
+
+        <section class="hero-panel example-output-panel" id="example-output">
+          <div class="panel-header">
+            <span>Example output</span>
+            <span class="badge">Villain merged scene</span>
+          </div>
+          <p class="hero-text">
+            This sample uses the directed villain scene and shows the kind of merged
+            deliverable the workflow produces after narration, merge, and conversion.
+          </p>
+          <div class="media-stack compact two-column-media">
+            <div class="media-card">
+              <div class="media-label-row">
+                <span class="media-label">MP3 preview</span>
+                <span class="file-chip">villain_directed_merged.mp3</span>
+              </div>
+              <audio
+                controls
+                preload="metadata"
+                src="media/villain_directed_merged.mp3"
+              ></audio>
+            </div>
+            <div class="media-card">
+              <div class="media-label-row">
+                <span class="media-label">MP4 preview</span>
+                <span class="file-chip">villain_directed_merged_image.mp4</span>
+              </div>
+              <div class="media-frame hero-video-frame">
+                <video
+                  controls
+                  preload="metadata"
+                  src="media/villain_directed_merged_image.mp4"
+                ></video>
+              </div>
+            </div>
+          </div>
+        </section>
+      </header>
+
+      <main>
+        <section class="section" id="input-lab">
+          <div class="section-heading">
+            <p class="eyebrow">Inputs</p>
+            <h2>Input Lab</h2>
+            <p>
+              Switch between a quickstart sample and an emotional-variants sample to see
+              how the workflow expects the input files to be structured.
+            </p>
+          </div>
+
+          <div class="lab-grid">
+            <div class="lab-controls card">
+              <div class="control-row">
+                <label for="preset-select">Scenario</label>
+                <select id="preset-select">
+                  <option value="valid">Valid quickstart</option>
+                  <option value="variants">Emotional variants</option>
+                </select>
+              </div>
+              <div class="control-row stacked">
+                <span>What to look for</span>
+                <ul class="mini-list">
+                  <li>Voice JSON is an object keyed by speaker name.</li>
+                  <li>Each dialogue line matches [SpeakerName]: Text.</li>
+                  <li>Dialogue speakers exist in the selected voice file.</li>
+                  <li>Emotional variants use separate speaker keys.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="editor-card card">
+              <div class="editor-heading">
+                <h3>Voice file</h3>
+                <span class="file-chip">characters.json</span>
+              </div>
+              <textarea id="voice-editor" spellcheck="false"></textarea>
+            </div>
+
+            <div class="editor-card card">
+              <div class="editor-heading">
+                <h3>Dialogue file</h3>
+                <span class="file-chip">dialogue.txt</span>
+              </div>
+              <textarea id="dialogue-editor" spellcheck="false"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="pipeline">
+          <div class="section-heading">
+            <p class="eyebrow">Commands</p>
+            <h2>Pipeline map</h2>
+            <p>
+              Select a step to inspect what it consumes, what it emits, and the exact
+              command surface used in this repository.
+            </p>
+            <p class="command-note">
+              Commands are shown as <strong>python ...</strong>. Use the Python interpreter from
+              your active environment, whether that is a virtual environment, conda, or another setup.
+            </p>
+          </div>
+
+          <div class="pipeline-grid">
+            <div class="pipeline-steps" id="pipeline-steps"></div>
+            <div class="pipeline-detail card" id="pipeline-detail"></div>
+          </div>
+        </section>
+
+        <section class="section" id="outputs">
+          <div class="section-heading">
+            <p class="eyebrow">Artifacts</p>
+            <h2>Output Explorer</h2>
+            <p>
+              The narration run produces more than a merged file. This section explains
+              what belongs in an output folder and why each artifact exists.
+            </p>
+          </div>
+
+          <div class="output-grid">
+            <div class="artifact-list card" id="artifact-list"></div>
+            <div class="artifact-detail card" id="artifact-detail"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -2,6 +2,8 @@
 
 A Windows-first local workflow for generating narrated dialogue with Qwen3-TTS, then exporting merged WAV, MP3, and shareable MP4 outputs.
 
+Interactive workflow guide: https://rajeshsatpathy1.github.io/qwenTTS-Local/
+
 ## What This Project Does
 
 - Generates character-consistent speech from dialogue text files.
