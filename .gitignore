@@ -17,12 +17,14 @@ output*/
 !samples/outputs/**/*.wav
 !samples/outputs/**/*.mp3
 !samples/outputs/**/*.mp4
+!docs/media/**
 
 *.png
 *.jpg
 *.jpeg
 *.webp
 !samples/outputs/**/*
+!docs/media/**
 
 *.log
 Thumbs.db
