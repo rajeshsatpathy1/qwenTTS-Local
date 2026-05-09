@@ -42,12 +42,96 @@ from qwen_tts import Qwen3TTSModel
 # ---------------------------------------------------------------------------
 
 def load_characters(path: str) -> dict:
-    """Load {character_name: voice_description} from a JSON file."""
+    """Load {character_name: config} from a JSON file."""
     with open(path, "r", encoding="utf-8") as fh:
         data = json.load(fh)
     if not isinstance(data, dict):
         raise ValueError(f"{path} must be a JSON object mapping names to descriptions.")
-    return data
+
+    json_dir = Path(path).resolve().parent
+    resolved = {}
+
+    def resolve_path(value: str) -> str:
+        candidate = Path(value)
+        if not candidate.is_absolute():
+            candidate = json_dir / candidate
+        return str(candidate.resolve())
+
+    def resolve_character(name: str, stack: list[str]) -> dict:
+        if name in resolved:
+            return resolved[name]
+        if name not in data:
+            raise ValueError(f"Unknown base voice {name!r} referenced in {path}.")
+        if name in stack:
+            cycle = " -> ".join(stack + [name])
+            raise ValueError(f"Circular base voice reference in {path}: {cycle}")
+
+        entry = data[name]
+        if isinstance(entry, str):
+            config = {
+                "description": entry.strip(),
+                "ref_audio": None,
+                "ref_text": REF_SENTENCE,
+            }
+        elif isinstance(entry, dict):
+            config = {
+                "description": "",
+                "ref_audio": None,
+                "ref_text": REF_SENTENCE,
+            }
+            base_name = entry.get("base")
+            if base_name:
+                if not isinstance(base_name, str) or not base_name.strip():
+                    raise ValueError(f"Character {name!r} has an invalid 'base' value in {path}.")
+                base_config = resolve_character(base_name.strip(), stack + [name])
+                config = dict(base_config)
+            else:
+                base_description = entry.get("voice") or entry.get("description")
+                if not isinstance(base_description, str) or not base_description.strip():
+                    raise ValueError(
+                        f"Character {name!r} in {path} must be a string or an object with "
+                        "either 'base' or 'voice'/'description'."
+                    )
+                config["description"] = base_description.strip()
+
+            modifier = entry.get("modifier", "")
+            if modifier:
+                if not isinstance(modifier, str):
+                    raise ValueError(f"Character {name!r} has a non-string 'modifier' in {path}.")
+
+                config["description"] = f"{config['description']} {modifier.strip()}".strip()
+
+            if "ref_audio" in entry:
+                ref_audio = entry["ref_audio"]
+                if ref_audio is None:
+                    config["ref_audio"] = None
+                elif isinstance(ref_audio, str) and ref_audio.strip():
+                    config["ref_audio"] = resolve_path(ref_audio.strip())
+                else:
+                    raise ValueError(f"Character {name!r} has an invalid 'ref_audio' in {path}.")
+
+            if "ref_text" in entry:
+                ref_text = entry["ref_text"]
+                if not isinstance(ref_text, str) or not ref_text.strip():
+                    raise ValueError(f"Character {name!r} has an invalid 'ref_text' in {path}.")
+                config["ref_text"] = ref_text.strip()
+
+            if config["ref_audio"] and not config["ref_text"]:
+                raise ValueError(
+                    f"Character {name!r} provides ref_audio but no ref_text in {path}."
+                )
+        else:
+            raise ValueError(
+                f"Character {name!r} in {path} must be either a string or an object."
+            )
+
+        resolved[name] = config
+        return config
+
+    for character_name in data:
+        resolve_character(character_name, [])
+
+    return resolved
 
 
 def parse_dialogue(path: str) -> list:
@@ -122,6 +206,14 @@ def expand_dialogue_chunks(dialogue: list[tuple[str, str]], max_chars: int) -> l
         for chunk in split_long_text(text, max_chars):
             expanded.append((char_name, chunk))
     return expanded
+
+
+def load_reference_audio(path: str) -> tuple[np.ndarray, int]:
+    """Load a user-supplied reference audio file and normalize it for cloning."""
+    wav_arr, sample_rate = sf.read(path, dtype="float32")
+    if wav_arr.ndim > 1:
+        wav_arr = wav_arr.mean(axis=1)
+    return wav_arr, sample_rate
 
 
 def detect_attn_impl() -> str:
@@ -268,8 +360,16 @@ def main():
         help="Folder for output WAV files (default: output/)",
     )
     parser.add_argument(
+        "--resume-output", action="store_true",
+        help="Skip dialogue chunks whose numbered WAV files already exist in the output folder.",
+    )
+    parser.add_argument(
         "--regen-refs", action="store_true",
         help="Re-generate character reference clips even if cached versions exist.",
+    )
+    parser.add_argument(
+        "--refs-only", action="store_true",
+        help="Generate or refresh character reference clips, then stop before dialogue narration.",
     )
     parser.add_argument(
         "--max-chars-per-line", type=int, default=260,
@@ -338,9 +438,28 @@ def main():
     # Step 1 — VoiceDesign: generate one reference clip per character
     # ------------------------------------------------------------------
     char_refs = {}  # name -> (wav_array, sample_rate)
+    ref_texts = {}
+
+    for char_name in sorted(used_chars):
+        config = characters[char_name]
+        ref_texts[char_name] = config["ref_text"]
+        if not config["ref_audio"]:
+            continue
+
+        source_path = config["ref_audio"]
+        if not Path(source_path).exists():
+            sys.exit(f"Reference audio for {char_name} was not found: {source_path}")
+
+        print(f"Using supplied reference audio for {char_name}: {source_path}")
+        wav_arr, sr = load_reference_audio(source_path)
+        ref_path = ref_dir / f"{char_name}.wav"
+        if args.regen_refs or not ref_path.exists():
+            sf.write(str(ref_path), wav_arr, sr)
+        char_refs[char_name] = (wav_arr, sr)
 
     chars_needing_refs = [
         c for c in sorted(used_chars)
+        if not characters[c]["ref_audio"]
         if args.regen_refs or not (ref_dir / f"{c}.wav").exists()
     ]
 
@@ -350,10 +469,10 @@ def main():
 
         print("\nGenerating character reference clips:")
         for char_name in chars_needing_refs:
-            instruct = characters[char_name]
+            instruct = characters[char_name]["description"]
             print(f"  {char_name}: {instruct}")
             wavs, sr = design_model.generate_voice_design(
-                text=REF_SENTENCE,
+                text=ref_texts[char_name],
                 language="English",
                 instruct=instruct,
             )
@@ -375,6 +494,10 @@ def main():
             wav_arr, sr = sf.read(str(ref_path))
             char_refs[char_name] = (wav_arr, sr)
 
+    if args.refs_only:
+        print(f"\nDone! {len(char_refs)} character reference clips are available in: {ref_dir.resolve()}")
+        return
+
     # ------------------------------------------------------------------
     # Step 2 — VoiceClone: build reusable per-character prompts
     # ------------------------------------------------------------------
@@ -387,7 +510,7 @@ def main():
         wav_arr, sr = char_refs[char_name]
         clone_prompts[char_name] = clone_model.create_voice_clone_prompt(
             ref_audio=(wav_arr, sr),
-            ref_text=REF_SENTENCE,
+            ref_text=ref_texts[char_name],
         )
         print(f"  {char_name} -> OK")
 
@@ -401,6 +524,12 @@ def main():
         filename = f"{idx:04d}_{char_name}.wav"
         out_path = output_dir / filename
         preview = text[:70] + ("..." if len(text) > 70 else "")
+
+        if args.resume_output and out_path.exists():
+            print(f"  [{idx:04d}/{len(dialogue):04d}] {char_name}: skipping existing {filename}")
+            manifest_rows.append({"index": idx, "character": char_name, "text": text, "file": filename})
+            continue
+
         print(f"  [{idx:04d}/{len(dialogue):04d}] {char_name}: {preview}")
 
         wavs, sr = clone_model.generate_voice_clone(
